@@ -1,0 +1,14 @@
+{
+    "name": "freesoftwarefactory/crm-yii",
+    "description": "A Micro CRM for a Yii Framework Application",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=5.3.2"
+    },
+    "require-dev": {
+    },
+    "autoload": {
+        "files": ["autoload.php"]
+    }
+}
