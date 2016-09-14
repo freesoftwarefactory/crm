@@ -322,8 +322,22 @@ class Api extends Component {
 		return $this->db_delete('crm_contact_rel',"id = :id",[":id"=>$relid]);
 	}
 
+	public function deleteRelAllByTarget($target, $relname){
+		return $this->db_delete('crm_contact_rel',
+			"target_id = :target and relname = :relname",
+				[":target"=>$target,':relname'=>$relname]);
+	}
+
+	public function deleteRelAllBySource($source, $relname){
+		return $this->db_delete('crm_contact_rel',
+			"contact_id = :contact and relname = :relname",
+				[":contact"=>$source,':relname'=>$relname]);
+	}
+
 	public function listRel(){
-		return $this->db_select('select * from crm_contact_rel order by id;');
+		$list=$this->db_select('select * from crm_contact_rel order by id;');
+		if($list) return $list;
+		return [];
 	}
 
 	public function getRel($relid){
@@ -345,5 +359,30 @@ class Api extends Component {
 		',[':a'=>$target_id, ':b'=>$relname]);
 	}
 
+	public function listContactNamesInRelByTarget($target, $relname){
+		// helper. return all the names (comma separated) of such contacts
+		// involved in the relationship to a target_id
+		$results = "";
+		if($list = $this->listRelUsingTarget($target, $relname)){
+			$meta = $this->getMeta();
+			$fields = [];
+			foreach($meta as $field_name=>$data)
+				if(isset($data['list']))
+					$fields[] = $field_name;
+			$sep='';
+			foreach($list as $row){
+				$contact_id = $row->contact_id;
+				$names = "";$sep2='';
+				foreach($fields as $field_name){
+					$names .= $sep2.$this->getMetaValue($contact_id, $field_name);
+					$sep2=' ';
+				}
+				$names = ucwords(strtolower($names));
+				$results .= $sep.$names;		
+				$sep=',';
+			}
+		}
+		return $results;
+	}
 
 }

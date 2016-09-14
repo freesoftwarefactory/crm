@@ -256,6 +256,7 @@ manejo de relaciones:
 	 */
 	public function actionListrel() { 
 		$api = $this->getApi();
+		if($api->listRel())
 		foreach($api->listRel() as $r){
 			$this->info(sprintf(
 				"#%04s S:%-20s T:%-20s %-50s",

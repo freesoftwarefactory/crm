@@ -159,34 +159,74 @@ class CrmController extends Controller
 	public function actionAjaxfind(){
 		if(!Yii::$app->request->isAjax) die('invalid ajax request');
 		$keywords = filter_input(INPUT_POST,"keywords",FILTER_SANITIZE_STRING);
+		$view = filter_input(INPUT_POST,"view",FILTER_SANITIZE_STRING);
+		$button_class = filter_input(INPUT_POST,"button_class",FILTER_SANITIZE_STRING);
+		if(!$view) $view = 'edit'; // "edit", "choose"
+		if(!$button_class) $button_class = 'btn btn-primary';
+
 		$api = $this->getApi();
 		$meta = $api->getMeta();
 		$list = $api->getFullContactList($keywords,1);
 		//
+
+		// LIST ALL COLUMNS DEFINED IN METADATA MARKED WITH 'list'=>1..N
 		$columns = array();
 		foreach($meta as $field_name=>$metadata)
 			if(isset($metadata['list']) ? $metadata['list'] : false)
 				$columns[$field_name]=$metadata;
 		
-		$head = "<tr><th>/</th>";
-		foreach($columns as $field_name=>$metadata){
-			$label = ucwords(strtolower($metadata['label']));
-			$head .= "<th>$label</th>";
+		if('edit'==$view){
+			$head = "<tr><th>/</th>";
+			foreach($columns as $field_name=>$metadata){
+				$label = ucwords(strtolower($metadata['label']));
+				$head .= "<th>$label</th>";
+			}
+			$head .= "</tr>";
+			$html = "<table class='table'><thead>$head</thead><tbody>";
+			foreach($list as $c){
+				$contact_id = $c->id;
+				$tr = "<tr>";
+				$tr .= "<td><button class='{$button_class} view-contact' 
+					data='{$contact_id}'>
+					<span class='glyphicon glyphicon-pencil'></span>
+						</button></td>";
+				foreach($columns as $field_name=>$metadata)
+					$tr .= "<td>{$c->$field_name}</td>";
+				$tr .= "</tr>";
+				$html .= $tr;
+			}
+			$html .= "</tbody></table>";
 		}
-		$head .= "</tr>";
 
-		$html = "<table class='table'><thead>$head</thead><tbody>";
-		foreach($list as $c){
-			$contact_id = $c->id;
-			$tr = "<tr>";
-			$tr .= "<td><button class='btn btn-primary view-contact' data='{$contact_id}'>
-				<span class='glyphicon glyphicon-pencil'></span></button></td>";
-			foreach($columns as $field_name=>$metadata)
-				$tr .= "<td>{$c->$field_name}</td>";
-			$tr .= "</tr>";
-			$html .= $tr;
+		if('choose' == $view){
+			$head = "<tr><th>/</th>";
+			foreach($columns as $field_name=>$metadata){
+				$label = ucwords(strtolower($metadata['label']));
+				$head .= "<th>$label</th>";
+			}
+			$head .= "</tr>";
+			$html = "<table class='table'><thead>$head</thead><tbody>";
+			foreach($list as $c){
+				$contact_id = $c->id;
+
+				$_c = [];
+				$_c['id'] = $contact_id;
+				foreach($columns as $field_name=>$metadata)
+					$_c[$field_name] = $c->$field_name;
+				$_c = base64_encode(json_encode($_c));
+
+				$tr = "<tr>";
+				$tr .= "<td>
+					<input type='radio' name='crm-contact' 
+						data='$_c' /></td>";
+				foreach($columns as $field_name=>$metadata)
+					$tr .= "<td>{$c->$field_name}</td>";
+				$tr .= "</tr>";
+				$html .= $tr;
+			}
+			$html .= "</tbody></table>";
 		}
-		$html .= "</tbody></table>";
+
 		//
 		$result['status'] = true;
 		$result['keywords'] = $keywords;
