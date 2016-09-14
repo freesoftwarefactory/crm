@@ -61,6 +61,14 @@ class Api extends Component {
 		return $m[$field_name];
 	}
 
+	public function getListFields(){
+		$fields = [];
+		foreach($this->getMeta() as $field_name=>$data)
+			if(isset($data['list']))
+				$fields[] = $field_name;
+		return $fields;
+	}
+
 	public function formEditConstructor($instance=null,$meta=null){
 		$meta = null==$meta ? $this->getMeta() : $meta;
 		$html = "";

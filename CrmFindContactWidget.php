@@ -98,6 +98,7 @@ class CrmFindContactWidget extends Widget
 					current_label.val(full);
 					current.val(_c.id);
 					current.data('contact',_c);  // <-- FOR PUBLIC USAGE
+					current.trigger('change');
 					$('{$this->selector_finder}').show();
 					d.finder.hide();
 				});
