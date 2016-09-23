@@ -45,6 +45,7 @@ class CrmFindContactWidget extends Widget
 	public $selector_activator; // jQuery selector of launcher
 	public $selector_finder; // jQuery selector of the entire finder
 	public $form; // a user provided html layout containing fields, or null
+	public $readonly = true; // set to false to enable add and update oprs.
 	public $default_form_layout = "
 		<hr/>
 		<div class='panel panel-default'>
@@ -53,9 +54,9 @@ class CrmFindContactWidget extends Widget
 				<form class='default-form'>
 					%form%
 					<button type='button' 
-						class='btn btn-primary save'>Guardar</button>
+						class='btn btn-primary save'>Guarda</button>
 					<button type='button' 
-						class='btn btn-default cancel'>Cancelar</button>
+						class='btn btn-default cancel'>Cierra</button>
 				</form>
 			</div>
 		</div>
@@ -77,9 +78,12 @@ class CrmFindContactWidget extends Widget
 		$this->find_action_url = Url::toRoute($this->find_action_url);
 		$this->get_action_url = Url::toRoute($this->get_action_url);
 		$this->save_action_url = Url::toRoute($this->save_action_url);
+		if($this->readonly)
+			$this->save_action_url = null;
 	}
 
 	public function run() {
+		$readonly = $this->readonly ? 'true' : 'false';
 		$c = 'crm-find-contact-widget';
 		$add_form = $this->getAddForm();
 		$html = "
@@ -262,6 +266,9 @@ class CrmFindContactWidget extends Widget
 				$('.{$c}-finder').show();
 				$('.{$c}-input').focus();
 			});
+			if(true == {$readonly})$('.{$c}-form .save').remove();
+			if(true == {$readonly})$('.{$c}-add').remove();
+
 			console.log('initialize $c is done');
 		",\yii\web\View::POS_READY,'crm-find-contact-widget-scripts');
 
@@ -271,7 +278,9 @@ class CrmFindContactWidget extends Widget
 	private function getAddForm(){
 		if(null != $this->form) return $this->form;	
 		$form  = "<input type='hidden' name='id' />";
-		$form .= $this->api->formEditConstructor();
+		$form .= $this->readonly ?
+			$this->api->formViewConstructor() : 
+				$this->api->formEditConstructor();
 		$form = str_replace("%form%",$form,
 			$this->default_form_layout);
 		return $form;

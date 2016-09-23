@@ -136,7 +136,10 @@ class Api extends Component {
 			$fieldset = "
 				<div class='form-group'>
 					<label class='label label-default'>{$data['label']}</label>
-					<p><div class='form-control crmvalue'>$value</div></p>
+					<p><input readonly 
+						name='{$field_name}' 
+						class='form-control crmfield crmvalue'
+						value='{$value}'></input></p>
 				</div>
 			";
 			$html .= $fieldset;
