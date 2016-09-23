@@ -44,19 +44,44 @@ class CrmFindContactWidget extends Widget
 	public $selector_label; // jQuery selector of the element receiving the label
 	public $selector_activator; // jQuery selector of launcher
 	public $selector_finder; // jQuery selector of the entire finder
+	public $form; // a user provided html layout containing fields, or null
+	public $default_form_layout = "
+		<hr/>
+		<div class='panel panel-default'>
+			<div class='panel-heading'>Datos del Contacto</div>
+			<div class='panel-body'>
+				<form class='default-form'>
+					%form%
+					<button type='button' 
+						class='btn btn-primary save'>Guardar</button>
+					<button type='button' 
+						class='btn btn-default cancel'>Cancelar</button>
+				</form>
+			</div>
+		</div>
+	";
 		
 	public $find_action_url = ['/crm/ajaxfind'];
+	public $get_action_url = ['/crm/ajaxget'];
+	public $save_action_url = ['/crm/ajaxsave'];
 
 	// THE SELECTED COLUMNS TO BE DISPLAYED ARE CONFIGURED IN CRM-CONFIG FILE
 	// VIA SETTING THE 'list' ATTRIBUTE TO A VALUE GREATHER THAN ZERO.
 
+	public function getapi(){
+		return \Yii::$app->crm;	
+	}
+
 	public function init() {
 		parent::init();
 		$this->find_action_url = Url::toRoute($this->find_action_url);
+		$this->get_action_url = Url::toRoute($this->get_action_url);
+		$this->save_action_url = Url::toRoute($this->save_action_url);
 	}
 
 	public function run() {
 		$c = 'crm-find-contact-widget';
+		$add_form = $this->getAddForm();
 		$html = "
 			<div class='{$c}'>
 				<div class='{$c}-finder' style='display: none;'>
@@ -67,7 +92,7 @@ class CrmFindContactWidget extends Widget
 							<button title='buscar' class='btn btn-primary {$c}-button'>
 								<span class='glyphicon glyphicon-search'></span>
 							</button>
-							<button title='crear' class='btn btn-success {$c}-close'>
+							<button title='crear' class='btn btn-success {$c}-add'>
 								<span class='glyphicon glyphicon-plus'></span>
 							</button>
 							<button title='volver' class='btn btn-default {$c}-close'>
@@ -75,6 +100,7 @@ class CrmFindContactWidget extends Widget
 							</button>
 						</span>
 					</div>
+					<div class='{$c}-form'>$add_form</div>
 					<div class='{$c}-list'></div>
 				</div>
 			</div>
@@ -102,13 +128,41 @@ class CrmFindContactWidget extends Widget
 					$('{$this->selector_finder}').show();
 					d.finder.hide();
 				});
+				d.list.find('tbody tr').each(function(i1,tr){
+					var data = null;
+					var col1 = null;
+					$(tr).find('td').each(function(i2,td){
+						if(i2==0) data = $(td).find('input[name=crm-contact]').attr('data');
+						if(i2==1) {
+							col1 = $(td).html().trim();
+							if('' == col1) col1 = '(sin nombre)';
+							col1 = '<a href=\"#\" title=\"click edit\" '
+								+'data=\"'+data+'\" class=\"edit-contact\">'+col1+'</a>';
+							$(td).html(col1);
+						}
+					});
+				});
+				d.list.find('.edit-contact').click(function(e){
+					e.preventDefault();
+					var a = $(this);
+					var data = JSON.parse(window.atob(a.attr('data')));
+					console.log('edit contact:',a.html(),data);
+					_launch_form(data);
+				});
 			};
 			$('.{$c}').each(function(){
 				var widget = $(this);
 				console.log('initialize $c, widget detected.');
 				var find_action_url = '{$this->find_action_url}';
+				var get_action_url = '{$this->get_action_url}';
+				var save_action_url = '{$this->save_action_url}';
 				var find = widget.find('.{$c}-button');
 				var close = widget.find('.{$c}-close');
+				var add = widget.find('.{$c}-add');
+				// form begin:
+				var form_save = widget.find('.default-form .save');
+				var form_cancel = widget.find('.default-form .cancel');
+				// form end.
 				close.click(function(e){
 					$('{$this->selector_finder}').show();
 					$('.{$c}-finder').hide();		
@@ -120,6 +174,8 @@ class CrmFindContactWidget extends Widget
 					var list = widget.find('.{$c}-list');
 					var keywords = input.val().trim();
 					if(!keywords.length) return;
+					$('.{$c}-list').show();
+					$('.{$c}-form').hide();
 					var _clear = function(){
 					}
 					//--find click ajax begins
@@ -146,11 +202,63 @@ class CrmFindContactWidget extends Widget
 					});
 					//--find click ajax ends
 				}); // find click
+				add.click(function(e){
+					console.log('crm add clicked');
+					_launch_form(null);
+				}); // add click
+				form_save.click(function(e){
+					var form = $('.{$c}-form');
+					var _data = [];
+					form.find('.crmfield').each(function(){
+						var value = $(this).val().trim();
+						var attr = $(this).attr('name');
+						_data.push({ name: attr, value: value });
+					});
+					console.log('sending',_data);
+					$.ajax({ cache: false, type: 'post', async: true, 
+						data: _data,
+						url: save_action_url, success: function(resp){ 
+							console.log('success save',resp);
+							form.hide();
+						}, error: function(e){ 
+							console.log(e.responseText); _clear(); 
+						}
+					});
+				});
+				form_cancel.click(function(e){
+					$('.{$c}-form').hide();
+				});
+				_render_form = function(form, contact){
+					console.log('initialize form with',contact);	
+					$.each(contact,function(attr,value){
+						console.log(attr,value);
+						form.find('[name='+attr+']').val(value);
+					});
+				};
+				_launch_form = function(current_contact){
+					console.log('launch form:',current_contact);
+					$('.{$c}-list').hide();
+					var form = $('.{$c}-form');
+					form.find('.crmfield').val('');//cleared
+					if(null != current_contact){
+						$.ajax({ cache: false, type: 'post', async: true, 
+							data: { select : true , 
+								contact_id : current_contact.id },
+							url: get_action_url, success: function(resp){ 
+								_render_form(form, resp);
+							}, error: function(e){ 
+								console.log(e.responseText); _clear(); 
+							}
+						});
+					}
+					form.show();
+				};
 			});
 			console.log('initialize activator: {$this->selector_activator}');
 			$('{$this->selector_activator}').click(function(){
 				console.log('activator clicked');
 				$('{$this->selector_finder}').hide();
+				$('.{$c}-form').hide();
 				$('.{$c}-finder').show();
 				$('.{$c}-input').focus();
 			});
@@ -159,5 +267,14 @@ class CrmFindContactWidget extends Widget
 
 		return $html;
 	}
+
+	private function getAddForm(){
+		if(null != $this->form) return $this->form;	
+		$form  = "<input type='hidden' name='id' />";
+		$form .= $this->api->formEditConstructor();
+		$form = str_replace("%form%",$form,
+			$this->default_form_layout);
+		return $form;
+	} // getAddForm
 }
 

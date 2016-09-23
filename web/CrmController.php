@@ -113,6 +113,7 @@ class CrmController extends Controller
 	}
 
 	public function actionAjaxsave(){
+		\Yii::$app->response->format = 'json';
 		$contact_id = $this->getSelectedContactIdOrDie();
 		$username = $this->getCurrentUsername();
 		$api = $this->getApi();
@@ -147,8 +148,7 @@ class CrmController extends Controller
 						'No se pudo guardar el contacto.'.$api->last_error));
 			}
 		}
-		\Yii::$app->response->format = 'json';
-		return json_encode($result);
+		return $result;
 	}
 
 	public function actionFind() {
@@ -234,6 +234,22 @@ class CrmController extends Controller
 		\Yii::$app->response->format = 'json';
 		//\Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 		return $result;
+	}
+
+	public function actionAjaxget(){
+		$contact = null;
+		if(!Yii::$app->request->isAjax) die('invalid ajax request');
+		$contact_id = filter_input(INPUT_POST,"contact_id",FILTER_SANITIZE_STRING);
+		$select = filter_input(INPUT_POST,"select",FILTER_SANITIZE_STRING);
+		if('true'==$select) {
+			$s = new Session;
+			$s->open();
+			$s['selected_id'] = $contact_id; // now can call save..
+		}
+		$api = $this->getApi();
+		$contact = $api->findContact($contact_id);
+		\Yii::$app->response->format = 'json';
+		return $contact;
 	}
 }
 		
