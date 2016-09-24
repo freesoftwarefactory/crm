@@ -210,8 +210,17 @@ class Api extends Component {
 	public function getContactList(){
 		return $this->db_select('select * from crm_contact;');
 	}
-	
-	public function getFullContactList($keywords,$list=1){
+
+	/**
+	 	returns a list of contacts and metadata, see note.
+	 
+		note:
+
+			crm_field, is a string used to select columns from metadata,
+			only those columns having this attribute will be returned.
+
+	 */
+	public function getFullContactList($keywords,$crm_field='list'){
 		$w = "where "; $w_sep=""; $w_params=array();
 		if($kw = explode(" ",strtolower($keywords)))
 			$n=0;
@@ -227,10 +236,10 @@ class Api extends Component {
 		$sql="select contact_id from crm_contact_meta $w group by contact_id";
 
 		$columns = array();
-		foreach($this->getMeta() as $fn=>$md)
-			if(isset($md['list']))
-				if($list==$md['list'])
-					$columns[] = $fn;
+		foreach($this->getMeta() as $fn=>$md){
+			if(isset($md[$crm_field]))
+				$columns[] = $fn;
+		}
 		$results = array();
 		if($rows=$this->db_select($sql,$w_params)){
 			foreach($rows as $row){

@@ -167,7 +167,7 @@ class CrmController extends Controller
 
 		$api = $this->getApi();
 		$meta = $api->getMeta();
-		$list = $api->getFullContactList($keywords,1);
+		$list = $api->getFullContactList($keywords,$crm_field);
 		//
 		if(null == $crm_field) $crm_field = 'list';
 
