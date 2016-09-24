@@ -36,6 +36,9 @@ manejo de relaciones:
 	# edita una relacion
 	./yii crm/updaterel <rel_id> <target> <relname>
 	
+	# edita la metadata de una relacion
+	./yii crm/updaterelmeta <rel_id> <metavalue>
+	
 	# borra una relacion
 	./yii crm/deleterel <rel_id>
 	
@@ -259,8 +262,8 @@ manejo de relaciones:
 		if($api->listRel())
 		foreach($api->listRel() as $r){
 			$this->info(sprintf(
-				"#%04s S:%-20s T:%-20s %-50s",
-				$r->id,$r->contact_id,$r->target_id,$r->relname));
+				"#%04s S:%-20s T:%-20s %-30s (%s)",
+				$r->id,$r->contact_id,$r->target_id,$r->relname,$r->meta));
 		}
 	}
 	
@@ -273,7 +276,7 @@ manejo de relaciones:
 		$r = $api->getRel($rel_id);
 		if($r)
 		foreach(array("id","creation_date","mod_date",
-			"contact_id","target_id","relname") as $attr){
+			"contact_id","target_id","relname","meta") as $attr){
 			$val = $r->$attr;
 			if(('creation_date'==$attr) || ('mod_date'==$attr))
 				$val = date("Y-m-d H:i:s",$r->$attr);
@@ -291,7 +294,19 @@ manejo de relaciones:
 		$target = $P2;
 		$relname = $P3;
 		$r=$api->updateRel($rel_id, $target, $relname);
-		$this->info("actualizada r=[$r]");
+		$this->info("updated r=[$r]");
+	}
+
+	/**
+	 	update the relationship metadata <rel_id> <value>
+	 */
+	public function actionUpdaterelmeta($P1,$P2) { 
+		$api = $this->getApi();
+		// <rel_id> <value>
+		$rel_id = $P1;
+		$value = $P2;
+		$r=$api->updateRelMeta($rel_id, $value);
+		$this->info("updated r=[$r]");
 	}
 
 	/**

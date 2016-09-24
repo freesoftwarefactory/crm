@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS `crm_contact_rel` (
 	`contact_id` char(20) not null,
 	`target_id` char(20) not null,
 	`relname` char(50),
+	`meta` char(255),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 

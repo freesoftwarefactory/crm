@@ -332,6 +332,12 @@ class Api extends Component {
 			],"id = :id",[":id"=>$relid]);
 	}
 
+	public function updateRelMeta($relid, $value){
+		return $this->db_update('crm_contact_rel',[
+				"meta" => $value,
+			],"id = :id",[":id"=>$relid]);
+	}
+
 	public function deleteRel($relid){
 		return $this->db_delete('crm_contact_rel',"id = :id",[":id"=>$relid]);
 	}
