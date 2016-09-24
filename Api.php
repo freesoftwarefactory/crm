@@ -85,7 +85,7 @@ class Api extends Component {
 				}
 			}
 			$value = htmlentities($value);
-			$fieldset = "<div class='form-group'>";
+			$fieldset = "<div class='form-group crm-form-group'>";
 			$type = $data['type'];
 			$required = isset($data['required']) ? $data['required'] : false;
 			$required = $required ? 'required' : '';
@@ -134,7 +134,7 @@ class Api extends Component {
 			}
 			$value = htmlentities($value);
 			$fieldset = "
-				<div class='form-group'>
+				<div class='form-group crm-form-group'>
 					<label class='label label-default'>{$data['label']}</label>
 					<p><input readonly 
 						name='{$field_name}' 
@@ -221,6 +221,9 @@ class Api extends Component {
 				$w_sep = " OR ";
 				$w_params[$p] = "%$k%";
 			}
+		if(''==$keywords){
+			$w=''; $w_params=[];
+		}
 		$sql="select contact_id from crm_contact_meta $w group by contact_id";
 
 		$columns = array();

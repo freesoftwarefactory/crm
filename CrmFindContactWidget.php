@@ -38,7 +38,9 @@ use yii\helpers\Url;
 
  */
 class CrmFindContactWidget extends Widget
-{
+{                                    
+	public $mode='finder'; 		// finder or browser
+	public $crm_field = null; 	// which attribute in meta will be show
 	public $placeholder='Busque tipeando algo y de click en lupa';
 	public $selector; // jQuery selector of the element receiving the contact
 	public $selector_label; // jQuery selector of the element receiving the label
@@ -53,10 +55,12 @@ class CrmFindContactWidget extends Widget
 			<div class='panel-body'>
 				<form class='default-form'>
 					%form%
+					<div class='buttons'>
 					<button type='button' 
 						class='btn btn-primary save'>Guarda</button>
 					<button type='button' 
 						class='btn btn-default cancel'>Cierra</button>
+					</div>
 				</form>
 			</div>
 		</div>
@@ -177,14 +181,18 @@ class CrmFindContactWidget extends Widget
 					var finder = widget.find('.{$c}-finder');
 					var list = widget.find('.{$c}-list');
 					var keywords = input.val().trim();
-					if(!keywords.length) return;
+					//if(!keywords.length) return;
 					$('.{$c}-list').show();
 					$('.{$c}-form').hide();
 					var _clear = function(){
 					}
 					//--find click ajax begins
-					var _d = { keywords: keywords , view: 'choose', 
-						button_class: 'none' };
+					var view_mode = 'choose';
+					if('browser'=='{$this->mode}')
+						view_mode = 'browse';
+
+					var _d = { keywords: keywords , view: view_mode, 
+						button_class: 'none' , crm_field : '{$this->crm_field}'};
 					console.log('ajax',_d);
 					$.ajax({ cache: false, type: 'post', async: true, data: _d,
 						url: find_action_url, success: function(resp){ 
@@ -265,9 +273,13 @@ class CrmFindContactWidget extends Widget
 				$('.{$c}-form').hide();
 				$('.{$c}-finder').show();
 				$('.{$c}-input').focus();
+				console.log('activator clicked ends.');
 			});
 			if(true == {$readonly})$('.{$c}-form .save').remove();
 			if(true == {$readonly})$('.{$c}-add').remove();
+
+			if('browser'=='{$this->mode}')
+				$('{$this->selector_activator}').trigger('click');
 
 			console.log('initialize $c is done');
 		",\yii\web\View::POS_READY,'crm-find-contact-widget-scripts');

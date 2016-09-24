@@ -161,6 +161,7 @@ class CrmController extends Controller
 		$keywords = filter_input(INPUT_POST,"keywords",FILTER_SANITIZE_STRING);
 		$view = filter_input(INPUT_POST,"view",FILTER_SANITIZE_STRING);
 		$button_class = filter_input(INPUT_POST,"button_class",FILTER_SANITIZE_STRING);
+		$crm_field = filter_input(INPUT_POST,"crm_field",FILTER_SANITIZE_STRING);
 		if(!$view) $view = 'edit'; // "edit", "choose"
 		if(!$button_class) $button_class = 'btn btn-primary';
 
@@ -168,12 +169,13 @@ class CrmController extends Controller
 		$meta = $api->getMeta();
 		$list = $api->getFullContactList($keywords,1);
 		//
+		if(null == $crm_field) $crm_field = 'list';
 
-		// LIST ALL COLUMNS DEFINED IN METADATA MARKED WITH 'list'=>1..N
 		$columns = array();
-		foreach($meta as $field_name=>$metadata)
-			if(isset($metadata['list']) ? $metadata['list'] : false)
+		foreach($meta as $field_name=>$metadata){
+			if(isset($metadata[$crm_field]))
 				$columns[$field_name]=$metadata;
+		}
 		
 		if('edit'==$view){
 			$head = "<tr><th>/</th>";
@@ -227,6 +229,39 @@ class CrmController extends Controller
 			$html .= "</tbody></table>";
 		}
 
+		if('browse' == $view){
+			$head = "<tr><th class='col0'>/</th>";
+			foreach($columns as $field_name=>$metadata){
+				$label = ucwords(strtolower($metadata['label']));
+				$head .= "<th>$label</th>";
+			}
+			$head .= "</tr>";
+			$html = "<table class='table'><thead>$head</thead><tbody>";
+			foreach($list as $c){
+				$contact_id = $c->id;
+
+				$_c = [];
+				$_c['id'] = $contact_id;
+				foreach($columns as $field_name=>$metadata)
+					if(isset($c->$field_name))
+						$_c[$field_name] = $c->$field_name;
+				$_c = base64_encode(json_encode($_c));
+
+				$tr = "<tr class='col0'>";
+				$tr .= "<td>
+					<input type='checkbox' cid='$contact_id' name='crm-contact' 
+						data='$_c' /></td>";
+				foreach($columns as $field_name=>$metadata)
+					if(isset($c->$field_name)){
+						$tr .= "<td>{$c->$field_name}</td>";
+					}else
+						$tr .= "<td class='empty'>&nbsp;</td>";
+				$tr .= "</tr>";
+				$html .= $tr;
+			}
+			$html .= "</tbody></table>";
+		}
+		
 		//
 		$result['status'] = true;
 		$result['keywords'] = $keywords;
