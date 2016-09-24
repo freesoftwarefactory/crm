@@ -354,8 +354,9 @@ class Api extends Component {
 				[":contact"=>$source,':relname'=>$relname]);
 	}
 
-	public function listRel(){
-		$list=$this->db_select('select * from crm_contact_rel order by id;');
+	public function listRel($w='',$params=null){
+		if($w) $w = ' where '.$w.' ';
+		$list=$this->db_select("select * from crm_contact_rel $w order by id;",$params);
 		if($list) return $list;
 		return [];
 	}
