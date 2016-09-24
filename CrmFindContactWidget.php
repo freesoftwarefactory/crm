@@ -249,7 +249,7 @@ class CrmFindContactWidget extends Widget
 				};
 				_launch_form = function(current_contact){
 					console.log('launch form:',current_contact);
-					$('.{$c}-list').hide();
+					//$('.{$c}-list').hide();
 					var form = $('.{$c}-form');
 					form.find('.crmfield').val('');//cleared
 					if(null != current_contact){
@@ -278,8 +278,10 @@ class CrmFindContactWidget extends Widget
 			if(true == {$readonly})$('.{$c}-form .save').remove();
 			if(true == {$readonly})$('.{$c}-add').remove();
 
-			if('browser'=='{$this->mode}')
+			if('browser'=='{$this->mode}'){
+				$('.{$c}-close').remove();
 				$('{$this->selector_activator}').trigger('click');
+			}
 
 			console.log('initialize $c is done');
 		",\yii\web\View::POS_READY,'crm-find-contact-widget-scripts');
