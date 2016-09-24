@@ -204,6 +204,12 @@ class CrmFindContactWidget extends Widget
 								_crm_handle_choose_contact(
 									{ widget: widget , finder: finder,
 										list: list , data : crmdata });
+								try{
+									var evt = 'crm:find:list:updated';
+									console.log('crm:firing:event',evt);
+									$( document ).trigger(evt, [list,keywords,resp]);
+								}catch(e){ console.log(
+									'crm:list:excepcion when calling event',e); }
 							}else{
 								list.html('sin resultados');
 							}
