@@ -158,6 +158,7 @@ class CrmController extends Controller
 
 	public function actionAjaxfind(){
 		if(!Yii::$app->request->isAjax) die('invalid ajax request');
+		\Yii::$app->response->format = 'json';
 		$keywords = filter_input(INPUT_POST,"keywords",FILTER_SANITIZE_STRING);
 		$view = filter_input(INPUT_POST,"view",FILTER_SANITIZE_STRING);
 		$button_class = filter_input(INPUT_POST,"button_class",FILTER_SANITIZE_STRING);
@@ -165,9 +166,12 @@ class CrmController extends Controller
 		if(!$view) $view = 'edit'; // "edit", "choose"
 		if(!$button_class) $button_class = 'btn btn-primary';
 
+		if(''==$crm_field) $crm_field = 'list'; // common ones: list, browse
+
 		$api = $this->getApi();
 		$meta = $api->getMeta();
 		$list = $api->getFullContactList($keywords,$crm_field);
+		
 		//
 		if(null == $crm_field) $crm_field = 'list';
 
@@ -268,7 +272,6 @@ class CrmController extends Controller
 		$result['html'] = $html;
 		$result['columns'] = $columns;
 		$result['data'] = $list;
-		\Yii::$app->response->format = 'json';
 		//\Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 		return $result;
 	}

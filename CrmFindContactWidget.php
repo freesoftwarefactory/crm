@@ -40,7 +40,7 @@ use yii\helpers\Url;
 class CrmFindContactWidget extends Widget
 {                                    
 	public $mode='finder'; 		// finder or browser
-	public $crm_field = null; 	// which attribute in meta will be show
+	public $crm_field = 'list';	// which attribute in meta will be show
 	public $placeholder='Busque tipeando algo y de click en lupa';
 	public $selector; // jQuery selector of the element receiving the contact
 	public $selector_label; // jQuery selector of the element receiving the label
