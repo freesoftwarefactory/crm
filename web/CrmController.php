@@ -233,7 +233,7 @@ class CrmController extends Controller
 			$head = "<tr><th class='col0'>/</th>";
 			foreach($columns as $field_name=>$metadata){
 				$label = ucwords(strtolower($metadata['label']));
-				$head .= "<th>$label</th>";
+				$head .= "<th data='$field_name'>$label</th>";
 			}
 			$head .= "</tr>";
 			$html = "<table class='table'><thead>$head</thead><tbody>";
@@ -247,15 +247,15 @@ class CrmController extends Controller
 						$_c[$field_name] = $c->$field_name;
 				$_c = base64_encode(json_encode($_c));
 
-				$tr = "<tr class='col0'>";
+				$tr = "<tr class='col0' cid='{$contact_id}' >";
 				$tr .= "<td>
 					<input type='checkbox' cid='$contact_id' name='crm-contact' 
 						data='$_c' /></td>";
 				foreach($columns as $field_name=>$metadata)
 					if(isset($c->$field_name)){
-						$tr .= "<td>{$c->$field_name}</td>";
+						$tr .= "<td class='crm-column' data='$field_name'>{$c->$field_name}</td>";
 					}else
-						$tr .= "<td class='empty'>&nbsp;</td>";
+						$tr .= "<td class='crm-column crm-column-empty' data='$field_name'>&nbsp;</td>";
 				$tr .= "</tr>";
 				$html .= $tr;
 			}
@@ -266,6 +266,8 @@ class CrmController extends Controller
 		$result['status'] = true;
 		$result['keywords'] = $keywords;
 		$result['html'] = $html;
+		$result['columns'] = $columns;
+		$result['data'] = $list;
 		\Yii::$app->response->format = 'json';
 		//\Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 		return $result;

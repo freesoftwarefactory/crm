@@ -208,6 +208,7 @@ class CrmFindContactWidget extends Widget
 									var evt = 'crm:find:list:updated';
 									console.log('crm:firing:event',evt);
 									$( document ).trigger(evt, [list,keywords,resp]);
+									console.log('crm:fired:event',evt);
 								}catch(e){ console.log(
 									'crm:list:excepcion when calling event',e); }
 							}else{
