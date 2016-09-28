@@ -167,6 +167,7 @@ class CrmFindContactWidget extends Widget
 				var find = widget.find('.{$c}-button');
 				var close = widget.find('.{$c}-close');
 				var add = widget.find('.{$c}-add');
+				$('.{$c}-list').addClass('result-list');
 				// form begin:
 				var form_save = widget.find('.default-form .save');
 				var form_cancel = widget.find('.default-form .cancel');
@@ -256,6 +257,15 @@ class CrmFindContactWidget extends Widget
 				};
 				_launch_form = function(current_contact){
 					console.log('launch form:',current_contact);
+					var widget = $('.{$c}');
+
+					try{
+						var evt = 'crm:form:launch';
+						console.log('crm:firing:event',evt);
+						$( document ).trigger(evt, [widget,current_contact]);
+					}catch(e){ console.log(
+					'exception '+evt+' when calling event',e); }
+
 					//$('.{$c}-list').hide();
 					var form = $('.{$c}-form');
 					form.find('.crmfield').val('');//cleared
@@ -264,7 +274,17 @@ class CrmFindContactWidget extends Widget
 							data: { select : true , 
 								contact_id : current_contact.id },
 							url: get_action_url, success: function(resp){ 
-								_render_form(form, resp);
+
+							try{
+								var evt = 'crm:form:render:contact';
+								console.log('crm:firing:event',evt);
+								$( document ).trigger(evt, 
+									[widget,current_contact,resp]);
+							}catch(e){ console.log(
+							'exception '+evt+' when calling event',e); }
+
+							_render_form(form, resp);
+
 							}, error: function(e){ 
 								console.log(e.responseText); _clear(); 
 							}

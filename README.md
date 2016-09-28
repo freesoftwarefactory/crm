@@ -154,6 +154,29 @@ text input (a hidden input, as an example).
 </div>
 ```
 
+## Customize Contact Widget using Events Handlers
+
+The contact widget fires some events to help you take desitions in you
+own implementation, just add this code snippets:
+
+```
+$( document ).on( 'crm:find:list:updated', { some: 'data'}, 
+	function( event, list, keywords, resp ) {
+
+});
+
+$( document ).on( 'crm:form:launch', { some: 'data'}, 
+	function( event, widget, current_contact) {
+
+	widget.find('.result-list').hide();
+});
+
+$( document ).on( 'crm:form:render:contact', { some: 'data'}, 
+	function( event, widget, current_contact, response) {
+	
+});
+```
+
 ## API
 
 Use the api methods via:
