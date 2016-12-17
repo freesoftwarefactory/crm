@@ -69,6 +69,7 @@ class CrmFindContactWidget extends Widget
 	public $find_action_url = ['/crm/ajaxfind'];
 	public $get_action_url = ['/crm/ajaxget'];
 	public $save_action_url = ['/crm/ajaxsave'];
+	public $create_action_url = ['/crm/ajaxcreate'];
 
 	// THE SELECTED COLUMNS TO BE DISPLAYED ARE CONFIGURED IN CRM-CONFIG FILE
 	// VIA SETTING THE 'list' ATTRIBUTE TO A VALUE GREATHER THAN ZERO.
@@ -82,6 +83,7 @@ class CrmFindContactWidget extends Widget
 		$this->find_action_url = Url::toRoute($this->find_action_url);
 		$this->get_action_url = Url::toRoute($this->get_action_url);
 		$this->save_action_url = Url::toRoute($this->save_action_url);
+		$this->create_action_url = Url::toRoute($this->create_action_url);
 		if($this->readonly)
 			$this->save_action_url = null;
 	}
@@ -164,6 +166,7 @@ class CrmFindContactWidget extends Widget
 				var find_action_url = '{$this->find_action_url}';
 				var get_action_url = '{$this->get_action_url}';
 				var save_action_url = '{$this->save_action_url}';
+				var create_action_url = '{$this->create_action_url}';
 				var find = widget.find('.{$c}-button');
 				var close = widget.find('.{$c}-close');
 				var add = widget.find('.{$c}-add');
@@ -224,10 +227,14 @@ class CrmFindContactWidget extends Widget
 				}); // find click
 				add.click(function(e){
 					console.log('crm add clicked');
+					$('.crmfield').val('');//cleared
 					_launch_form(null);
 				}); // add click
 				form_save.click(function(e){
 					var form = $('.{$c}-form');
+					var url = save_action_url;
+					if('' == form.find('[name=id]').val())
+						url = create_action_url;
 					var _data = [];
 					form.find('.crmfield').each(function(){
 						var value = $(this).val().trim();
@@ -237,7 +244,7 @@ class CrmFindContactWidget extends Widget
 					console.log('sending',_data);
 					$.ajax({ cache: false, type: 'post', async: true, 
 						data: _data,
-						url: save_action_url, success: function(resp){ 
+						url: url, success: function(resp){ 
 							console.log('success save',resp);
 							form.hide();
 						}, error: function(e){ 
