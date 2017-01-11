@@ -174,11 +174,12 @@ class Api extends Component {
 			 'select meta_value from crm_contact_meta  '
 			.' where contact_id = :id and meta_name = :fn', 
 			[':id' => $contact_id, ':fn' => $field_name]))
-				return $r[0]->meta_value;
+				return utf8_decode($r[0]->meta_value);
 		return "";		
 	}
 
 	public function setMetaValue($contact_id, $field_name, $field_value){
+		$field_value = utf8_encode($field_value);
 		$r = $this->db_select(
 		'select id,meta_value from crm_contact_meta 
 			where contact_id = :id and meta_name = :meta',
@@ -190,6 +191,8 @@ class Api extends Component {
 					'mod_date'=>time(),
 				],'(contact_id=:a) and (meta_name=:b)',
 					[':a'=>$contact_id,':b'=>$field_name]);
+				$this->db_update('crm_contact',['mod_date'=>time()],
+					'id = :id',[':id'=>$contact_id]);
 			}
 		}else{
 			$mID = 'CTME-'.hash('crc32',serialize(
@@ -200,11 +203,17 @@ class Api extends Component {
 			$_mattr['mod_date'] = time();
 			$_mattr['contact_id'] = $contact_id;
 			$_mattr['meta_name'] = $field_name;
-			$_mattr['meta_value'] = $field_value;
+			$_mattr['meta_value'] = "";
 			$this->db_insert('crm_contact_meta',$_mattr);
+				
+			$this->db_update('crm_contact_meta',[
+					'meta_value'=>$field_value,
+				],'(contact_id=:a) and (meta_name=:b)',
+					[':a'=>$contact_id,':b'=>$field_name]);
+
+			$this->db_update('crm_contact',['mod_date'=>time()],
+				'id = :id',[':id'=>$contact_id]);
 		}
-		$this->db_update('crm_contact',['mod_date'=>time()],
-			'id = :id',[':id'=>$contact_id]);
 	}
 
 	public function getContactList(){
@@ -271,7 +280,7 @@ class Api extends Component {
 				$_mattr['mod_date'] = time();
 				$_mattr['contact_id'] = $ID;
 				$_mattr['meta_name'] = $fieldname;
-				$_mattr['meta_value'] = $fieldvalue;
+				$_mattr['meta_value'] = utf8_encode($fieldvalue);
 				$this->db_insert('crm_contact_meta',$_mattr);
 			}
 			return $ID;
