@@ -228,6 +228,7 @@ class CrmFindContactWidget extends Widget
 				add.click(function(e){
 					console.log('crm add clicked');
 					$('.crmfield').val('');//cleared
+					var form = $('.{$c}-form input[name=id]').val('');
 					_launch_form(null);
 				}); // add click
 				form_save.click(function(e){
